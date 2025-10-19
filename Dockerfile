@@ -14,4 +14,15 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY app app
 COPY artifacts artifacts
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port",]()
+
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD python - <<'PY' || exit 1
+import json, urllib.request
+try:
+    with urllib.request.urlopen("http://localhost:8000/health", timeout=2) as r:
+        body = json.loads(r.read().decode())
+        assert r.status == 200 and body.get("status") == "ok"
+except Exception:
+    raise SystemExit(1)
+PY
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
