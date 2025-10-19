@@ -14,13 +14,14 @@ jobs:
       IMAGE_NAME: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip wheel
           pip install -r requirements.txt
 
       - name: Train per tag
@@ -54,10 +55,10 @@ jobs:
         run: |
           docker run -d -p 8000:8000 --name svc $IMAGE_NAME
           sleep 3
-          curl -sSf http://localhost:8000/health | jq .
+          curl -sSf http://localhost:8000/health
           curl -sSf -X POST http://localhost:8000/predict \
             -H "Content-Type: application/json" \
-            -d '{"age":0.02,"sex":-0.044,"bmi":0.06,"bp":-0.03,"s1":-0.02,"s2":0.03,"s3":-0.02,"s4":0.02,"s5":0.02,"s6":-0.001}' | jq .
+            -d '{"age":0.02,"sex":-0.044,"bmi":0.06,"bp":-0.03,"s1":-0.02,"s2":0.03,"s3":-0.02,"s4":0.02,"s5":0.02,"s6":-0.001}'
           docker rm -f svc
 
       - name: Push image
