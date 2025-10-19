@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  diabetes-ml:
+    image: ghcr.io/${COMPOSE_GHCR:-samyahaldeen}/diabetes-triage-ml:${TAG:-v0.2}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "- <<PY", "import json,urllib.request;print(json.load(urllib.request.urlopen('http://localhost:8000/health'))['status'])", "PY"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
